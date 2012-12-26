@@ -1,6 +1,16 @@
 *.class
+war/WEB-INF/classes/
+war/WEB-INF/lib/
 
 # Package Files #
 *.jar
 *.war
 *.ear
+
+# generated files
+bin/
+
+# Eclipse project files
+.classpath
+.project
+.settings
