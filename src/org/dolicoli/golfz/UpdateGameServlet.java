@@ -92,7 +92,13 @@ public class UpdateGameServlet extends HttpServlet {
 		}
 
 		updateResults(gameId, results);
+
+		long time = new Date().getTime();
+		backupGame(time, game);
+		backupResults(time, gameId, results);
+
 		writer.println("OK");
+
 	}
 
 	private void updateGame(Game game) {
@@ -155,6 +161,80 @@ public class UpdateGameServlet extends HttpServlet {
 
 				Entity resultEntity = new Entity(key);
 
+				resultEntity.setProperty("gameId", result.getGameId());
+				resultEntity.setProperty("holeNumber", result.getHoleNumber());
+				resultEntity.setProperty("parCount", result.getParCount());
+
+				for (int i = 0; i < 6; i++) {
+					resultEntity.setProperty("score" + i, result.getScore(i));
+					resultEntity.setProperty("usedHandicap" + i,
+							result.getUsedHandicap(i));
+				}
+				datastore.put(resultEntity);
+			}
+			txn.commit();
+		} finally {
+			if (txn.isActive()) {
+				txn.rollback();
+			}
+		}
+	}
+
+	private void backupGame(long time, Game game) {
+		DatastoreService datastore = DatastoreServiceFactory
+				.getDatastoreService();
+
+		Entity gameEntity = new Entity("GameBackup", time);
+
+		gameEntity.setProperty("backupTime", time);
+		gameEntity.setProperty("gameId", game.getGameId());
+
+		Date gameDate = new Date();
+		gameDate.setTime(game.getDate());
+		gameEntity.setProperty("gameDate", gameDate);
+
+		gameEntity.setProperty("holeCount", game.getHoleCount());
+		gameEntity.setProperty("playerCount", game.getPlayerCount());
+
+		gameEntity.setProperty("holeFee", game.getHoleFee());
+		gameEntity.setProperty("extraFee", game.getExtraFee());
+		gameEntity.setProperty("rankingFee", game.getRankingFee());
+
+		gameEntity.setProperty("fieldName", game.getFieldName());
+		gameEntity
+				.setProperty("fairwayDifficulty", game.getFairwayDifficulty());
+		gameEntity.setProperty("greenDifficulty", game.getGreenDifficulty());
+
+		for (int i = 0; i < 6; i++) {
+			gameEntity.setProperty("holeFeePerRanking" + (i + 1),
+					game.getHoleFeePerRanking(i + 1));
+
+			gameEntity.setProperty("rankingFeePerRanking" + (i + 1),
+					game.getRankingFeePerRanking(i + 1));
+
+			gameEntity.setProperty("playerName" + i, game.getPlayerName(i));
+			gameEntity.setProperty("handicap" + i, game.getHandicap(i));
+			gameEntity.setProperty("extraScore" + i, game.getExtraScore(i));
+		}
+
+		datastore.put(gameEntity);
+	}
+
+	private void backupResults(long time, String gameId,
+			ArrayList<Result> results) {
+		DatastoreService datastore = DatastoreServiceFactory
+				.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+
+		try {
+			for (Result result : results) {
+				Key key = new KeyFactory.Builder("ResultBackup", time)
+						.addChild("ResultBackup", result.getHoleNumber())
+						.getKey();
+
+				Entity resultEntity = new Entity(key);
+
+				resultEntity.setProperty("backupTime", time);
 				resultEntity.setProperty("gameId", result.getGameId());
 				resultEntity.setProperty("holeNumber", result.getHoleNumber());
 				resultEntity.setProperty("parCount", result.getParCount());
