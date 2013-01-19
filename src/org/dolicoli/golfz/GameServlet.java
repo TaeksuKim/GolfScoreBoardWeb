@@ -31,20 +31,24 @@ public class GameServlet extends HttpServlet {
 				resp.getOutputStream(), "UTF-8"), true);
 		writer.println("<?xml version='1.0' encoding='utf-8'?>");
 
+		long tick = getTick();
+
 		String gameId = req.getParameter("gameId");
 		if (gameId == null || gameId.equals("")) {
-			writer.println("<response result='ERROR' message='Game id is null.' />");
+			writer.println("<response result='ERROR' message='Game id is null.' tick='"
+					+ tick + "'/>");
 			return;
 		}
 
 		Game game = getGame(gameId);
 		if (game == null) {
 			writer.println("<response result='ERROR' message='Cannot find game with id: "
-					+ gameId + "' />");
+					+ gameId + "'  tick='" + tick + "'/>");
 			return;
 		}
 
 		writer.print("<response result='OK' type='game' ");
+		writer.print("tick='" + tick + "' ");
 		writer.print("gameId='" + game.getGameId() + "' ");
 		writer.print("gameDate='" + game.getDate() + "' ");
 		writer.print("holeCount='" + game.getHoleCount() + "' ");
@@ -127,6 +131,23 @@ public class GameServlet extends HttpServlet {
 		writer.println("</results>");
 
 		writer.println("</response>");
+	}
+
+	private long getTick() {
+		DatastoreService datastore = DatastoreServiceFactory
+				.getDatastoreService();
+
+		Filter keyFilter = new FilterPredicate("key", FilterOperator.EQUAL, 1);
+		Query q = new Query("Tick").setFilter(keyFilter);
+
+		long tick = 0L;
+		PreparedQuery pq = datastore.prepare(q);
+		for (Entity gameEntity : pq.asIterable()) {
+			tick = Common.getLongProperty(gameEntity, "tick", 0L);
+			break;
+		}
+
+		return tick;
 	}
 
 	private Game getGame(String gameId) {

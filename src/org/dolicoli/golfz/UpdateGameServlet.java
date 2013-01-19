@@ -97,6 +97,8 @@ public class UpdateGameServlet extends HttpServlet {
 		backupGame(time, game);
 		backupResults(time, gameId, results);
 
+		updateTick(time);
+
 		writer.println("OK");
 
 	}
@@ -246,6 +248,24 @@ public class UpdateGameServlet extends HttpServlet {
 				}
 				datastore.put(resultEntity);
 			}
+			txn.commit();
+		} finally {
+			if (txn.isActive()) {
+				txn.rollback();
+			}
+		}
+	}
+
+	private void updateTick(long time) {
+		DatastoreService datastore = DatastoreServiceFactory
+				.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+
+		try {
+			Entity tickEntity = new Entity("Tick", 1);
+			tickEntity.setProperty("key", 1);
+			tickEntity.setProperty("tick", time);
+			datastore.put(tickEntity);
 			txn.commit();
 		} finally {
 			if (txn.isActive()) {

@@ -54,7 +54,10 @@ public class GameListServlet extends HttpServlet {
 			to = format.format(calendar.getTime());
 		}
 
-		writer.println("<response result='OK' type='games'>");
+		long tick = getTick();
+
+		writer.println("<response result='OK' type='games' tick='" + tick
+				+ "'>");
 
 		ArrayList<Game> games = getGames(from, to);
 		for (Game game : games) {
@@ -86,6 +89,23 @@ public class GameListServlet extends HttpServlet {
 		}
 
 		writer.println("</response>");
+	}
+
+	private long getTick() {
+		DatastoreService datastore = DatastoreServiceFactory
+				.getDatastoreService();
+
+		Filter keyFilter = new FilterPredicate("key", FilterOperator.EQUAL, 1);
+		Query q = new Query("Tick").setFilter(keyFilter);
+
+		long tick = 0L;
+		PreparedQuery pq = datastore.prepare(q);
+		for (Entity gameEntity : pq.asIterable()) {
+			tick = Common.getLongProperty(gameEntity, "tick", 0L);
+			break;
+		}
+
+		return tick;
 	}
 
 	private ArrayList<Game> getGames(String from, String to) {

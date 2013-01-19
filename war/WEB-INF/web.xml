@@ -31,6 +31,22 @@
 		<servlet-name>HistoryListServlet</servlet-name>
 		<url-pattern>/historyList</url-pattern>
 	</servlet-mapping>
+	<servlet>
+		<servlet-name>TickServlet</servlet-name>
+		<servlet-class>org.dolicoli.golfz.TickServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TickServlet</servlet-name>
+		<url-pattern>/tick</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>UpdateTickServlet</servlet-name>
+		<servlet-class>org.dolicoli.golfz.UpdateTickServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UpdateTickServlet</servlet-name>
+		<url-pattern>/updateTick</url-pattern>
+	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
